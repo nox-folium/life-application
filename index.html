@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>page-1</title>
+</head>
+<body>
+    <article>
+        <header id="#s3">
+            <nav>
+                <p>menu</p>
+                <ul>
+                    <li><a href="#s1">input</a></li>
+                    <li><a href="#s2">preview</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section id="s1">
+            <h2>input</h2>
+            <form id="form">
+                <!--
+            <label>date</label>
+            <input type="text" name="date" required>
+            -->
+                <!--placeholderはナビ文字-->
+                <label>study</label>
+                <input type="number" id="study" placeholder="study-time">
+                <br>
+                <label>sleep</label>
+                <input type="number" id="sleep" placeholder="sleep-time">
+                <br>
+                <label>phone</label>
+                <input type="number" id="phone" placeholder="phone-time">
+                <br>
+                <!--type="button" ないとグラフ出ない
+                入力値をjs-dataInput,drawChartに渡す-->
+                <!--<button type="button" onclick="dataInput();drawChart();">send</button>-->
+                <button type="button" onclick="dataInput();drawChart();">record</button>
+            </form>
+        </section>
+
+        <section id="s2">
+            <h2>preview</h2>
+            <canvas id="chart1"></canvas>
+            <canvas id="chart2"></canvas>
+           
+            <!--グラフ作りの必須ツール-->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <a href="#s3">back menu</a>
+
+            <script>
+                let chart2; //グラフ保存用
+                let weekData = []; //7日分保存用
+                let userID = localStorage.getItem("userID");
+
+                //localStorage.clear(); //データリセット用
+
+                const GAS_URL = "https://script.google.com/macros/s/AKfycbznRxreOKKUCdZnKfRwq3JIq6tAK6-AFOsjFvCFa7SDOGraJviXRMmMB72J-0lmHjO3eg/exec";
+                const saveData = localStorage.getItem("weekData");
+                if (saveData) { //リロードしても消えないようにする
+                    weekData = JSON.parse(saveData);
+                }
+
+                async function getUserID() {
+                    if (!userID) {
+                        const response = await fetch(GAS_URL, {
+                            method: "POST",
+                            body: JSON.stringify({
+                                type: "getUserID"
+                            })
+                        });
+                        const result = await response.json();
+                        userID = result.userID;
+                        localStorage.setItem("userID", userID);
+                    }
+                    return userID;
+                }
+
+                //値の受け取り
+                function dataInput() {
+                    const study = Number(document.getElementById('study').value);
+                    const sleep = Number(document.getElementById('sleep').value);
+                    const phone = Number(document.getElementById('phone').value);
+
+                    weekData.push({ study, sleep, phone });
+                    //７個超えたら、一番古い所に上書き
+                    if (weekData.length > 7) {
+                        weekData.shift();
+                    }
+                    localStorage.setItem("weekData", JSON.stringify(weekData));
+
+                    //入力欄を空にする
+                    document.getElementById('study').value = '';
+                    document.getElementById('sleep').value = '';
+                    document.getElementById('phone').value = '';
+
+                    console.log(weekData);
+                    getUserID();
+                    sendToGAS();
+                }
+
+                //グラフの描写
+                function drawChart() {
+                    //グラフの場所確保
+                    const canvas = document.getElementById('chart2');
+
+                    //すでにグラフがあれば削除
+                    if (chart2) {
+                        chart2.destroy();
+                    }
+
+                    let studyTotal = 0;
+                    let sleepTotal = 0;
+                    let phoneTotal = 0;
+
+                    //合計値の計算
+                    weekData.forEach(day => {
+                        studyTotal = studyTotal + day.study;
+                        sleepTotal = sleepTotal + day.sleep;
+                        phoneTotal = phoneTotal + day.phone;
+                    });
+
+                    /* 割合出すときに使う
+                    const total = study + sleep + phone;
+                    const studyRate = study / total * 100;
+                    const sleepRate = sleep / total * 100;
+                    const phoneRate = phone / total * 100; */
+
+                    chart2 = new Chart(canvas, {
+                        type: 'pie',
+                        /* pie=円グラフ
+                           bar=棒グラフ
+                           line=折れ線グラフ */
+                        data: {
+                            labels: ['study', 'sleep', 'phone'], //グラフの項目
+                            datasets: [{
+                                data: [studyTotal, sleepTotal, phoneTotal] //labelsと同じ順番
+                            }]
+                        }
+                    });
+                }
+
+                function sendToGAS() {
+                    const now = new Date().toLocaleString("ja-JP");
+                    const userID = localStorage.getItem("userID");
+
+                    fetch(GAS_URL, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            date: now,
+                            userID: userID
+                        })
+                    })
+
+                    //動作確認用
+                    .then(data => {
+                        console.log("win", data);
+                    })
+                    .catch(error => {
+                        console.error("lose", error);
+                    });
+                }
+            </script>
+        </section>
+    </article>
+</body>
+</html>
