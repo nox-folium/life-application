@@ -15,13 +15,14 @@
                 </ul>
             </nav>
         </header>
+
         <section id="s1">
             <h2>input</h2>
             <form id="form">
                 <!--
-                <label>date</label>
-                <input type="text" name="date" required>
-                -->
+            <label>date</label>
+            <input type="text" name="date" required>
+            -->
                 <!--placeholderはナビ文字-->
                 <label>study</label>
                 <input type="number" id="study" placeholder="study-time">
@@ -32,18 +33,22 @@
                 <label>phone</label>
                 <input type="number" id="phone" placeholder="phone-time">
                 <br>
-                <!--type="button" ないとグラフ出ない。入力値をjs-dataInput,drawChartに渡す-->
+                <!--type="button" ないとグラフ出ない
+                入力値をjs-dataInput,drawChartに渡す-->
                 <!--<button type="button" onclick="dataInput();drawChart();">send</button>-->
                 <button type="button" onclick="dataInput();drawChart();">record</button>
             </form>
         </section>
+
         <section id="s2">
             <h2>preview</h2>
             <canvas id="chart"></canvas>
+           
             <!--グラフ作りの必須ツール-->
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
             <a href="#s3">back menu</a>
-            
+
             <script>
                 let chart; //グラフ保存用
                 let weekData = []; //7日分保存用
@@ -57,6 +62,21 @@
                     weekData = JSON.parse(saveData);
                 }
 
+                // async function getUserID() { //ユーザーID
+                //     if (!userID) {
+                //         const response = await fetch(GAS_URL, {
+                //             method: "POST",
+                //             body: JSON.stringify({
+                //                 type: "getUserID"
+                //             })
+                //         });
+                //         const result = await response.json();
+                //         userID = result.userID;
+                //         localStorage.setItem("userID", userID);
+                //     }
+                //     return userID;
+                // }
+
                 //値の受け取り
                 function dataInput() {
                     const study = Number(document.getElementById('study').value);
@@ -68,7 +88,6 @@
                     if (weekData.length > 7) {
                         weekData.shift();
                     }
-                    localStorage.setItem("weekData", JSON.stringify(weekData));
 
                     //入力欄を空にする
                     document.getElementById('study').value = '';
@@ -76,6 +95,7 @@
                     document.getElementById('phone').value = '';
 
                     console.log(weekData);
+                    //getUserID();
                     sendToGAS();
                 }
 
@@ -83,6 +103,7 @@
                 function drawChart() {
                     //グラフの場所確保
                     const canvas = document.getElementById('chart');
+
                     //すでにグラフがあれば削除
                     if (chart) {
                         chart.destroy();
@@ -91,19 +112,21 @@
                     let studyTotal = 0;
                     let sleepTotal = 0;
                     let phoneTotal = 0;
+
                     //合計値の計算
                     weekData.forEach(day => {
                         studyTotal = studyTotal + day.study;
                         sleepTotal = sleepTotal + day.sleep;
                         phoneTotal = phoneTotal + day.phone;
                     });
+
                     /* 割合出すときに使う
                     const total = study + sleep + phone;
                     const studyRate = study / total * 100;
                     const sleepRate = sleep / total * 100;
                     const phoneRate = phone / total * 100; */
 
-                    chart2 = new Chart(canvas, {
+                    chart = new Chart(canvas, {
                         type: 'pie',
                         /* pie=円グラフ
                            bar=棒グラフ
@@ -117,7 +140,6 @@
                     });
                 }
 
-                //GASにデータ送信
                 function sendToGAS() {
                     const now = new Date().toLocaleString("ja-JP");
                     const userID = localStorage.getItem("userID");
@@ -126,6 +148,7 @@
                         method: "POST",
                         body: JSON.stringify({
                             date: now,
+                            userID: userID
                         })
                     })
 
