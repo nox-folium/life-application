@@ -62,20 +62,20 @@
                     weekData = JSON.parse(saveData);
                 }
 
-                // async function getUserID() { //ユーザーID
-                //     if (!userID) {
-                //         const response = await fetch(GAS_URL, {
-                //             method: "POST",
-                //             body: JSON.stringify({
-                //                 type: "getUserID"
-                //             })
-                //         });
-                //         const result = await response.json();
-                //         userID = result.userID;
-                //         localStorage.setItem("userID", userID);
-                //     }
-                //     return userID;
-                // }
+                async function getUserID() { //ユーザーID
+                    if (!userID) {
+                        const response = await fetch(GAS_URL, {
+                            method: "POST",
+                            body: JSON.stringify({
+                                type: "getUserID"
+                            })
+                        });
+                        const result = await response.json();
+                        userID = result.userID;
+                        localStorage.setItem("userID", userID);
+                    }
+                    return userID;
+                }
 
                 //値の受け取り
                 function dataInput() {
