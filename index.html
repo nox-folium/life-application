@@ -88,6 +88,8 @@
                     if (weekData.length > 7) {
                         weekData.shift();
                     }
+                    //ローカルストレージに保存する
+                    localStorage.setItem("weekData", JSON.stringify(weekData));
 
                     //入力欄を空にする
                     document.getElementById('study').value = '';
