@@ -79,9 +79,13 @@
 
                 //値の受け取り
                 function dataInput() {
-                    const study = Number(document.getElementById('study').value);
-                    const sleep = Number(document.getElementById('sleep').value);
-                    const phone = Number(document.getElementById('phone').value);
+                    if (study < 0 || sleep < 0 || phone < 0) {
+    alert("0以上の値を入力してください。");
+    return;
+}
+                        const study = Number(document.getElementById('study').value);
+                        const sleep = Number(document.getElementById('sleep').value);
+                        const phone = Number(document.getElementById('phone').value);
 
                     weekData.push({ study, sleep, phone });
                     //７個超えたら、一番古い所に上書き
