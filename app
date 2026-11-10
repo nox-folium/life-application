@@ -30,6 +30,37 @@
         // 時間と予定をオブジェクト格納
         let items = [];
 
+        // localStrageに保存
+        function hozon(){
+            // JSON形式
+            localStorage.setItem("schedule",JSON.stringify(items));
+        }
+
+        // localStregeから読み込み
+        function yomikomi(){
+            // scheduleを取得
+            const saveData =localStorage.getItem("schedule");
+            // データあったとき
+            if(saveData){
+                try{
+                    // items配列に戻す
+                    const data =JSON.parse(saveData);
+                    // 配列であることを確認して読み込み
+                    if(Array.isArray(data)){
+                        items = data.filter(item =>
+                            item && typeof item.time === "string" && typeof item.text === "string"
+                        );
+                    }
+                }
+                // 読み込みに失敗したとき
+                catch(error){
+                    // consoleに表示
+                    console.error("保存データの読み込みに失敗しました",error);
+                    items = [];
+                }
+            }
+        }
+
         // スケジュール追加
         function tuika() {
             // 入力欄を取得
@@ -57,7 +88,8 @@
             items.push({ time: zikan, text: mokuhyou });
             // 時間の早い順にスケジュールを整列
             items.sort((a, b) => a.time.localeCompare(b.time));
-
+            // localStrageに保存
+            hozon();
             // 画面に表示
             hyouzi();
             // 入力欄を空にする
@@ -69,6 +101,7 @@
             // index番目の予定を削除
             items.splice(index, 1);
             // 
+            hozon();
             hyouzi();
         }
 
@@ -84,12 +117,13 @@
 
             itiran.innerHTML = items.map((item, i) => `
                 <div class="list-box">
-                    <span><b>【${item.time}】</b> ${item.text}</span>
-                    <button class="del-btn" onclick="sakujo(${i})">完了・削除</button>
+                    <span style="${item.completed ? 'text-decoration: line-through; color:gray;' : ''}">
+                        <b>【${item.time}】</b> ${item.text}</span>
+                    <button class="del-btn" onclick="kanryou(${i})" ${item.completed ? 'disabled' : ''}>${item.completed ? '達成済み' : '達成'}</button>
                 </div>
             `).join('');
         }
-
+        yomikomi();
         hyouzi();
     </script>
 
